@@ -1,0 +1,4 @@
+{
+  "MONGO_URI": "mongodb://localhost:27017/book_store",
+  "JWT_KEY": "book.store@jwt.com"
+}

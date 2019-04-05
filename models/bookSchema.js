@@ -1,37 +1,37 @@
-const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
+import { Schema as _Schema, model } from 'mongoose';
 
-let bookSchema = new Schema({
+const Schema = _Schema;
+
+const bookSchema = new Schema({
   _id: {
-    type: mongoose.Schema.Types.ObjectId
+    type: _Schema.Types.ObjectId,
   },
 
   name: {
     type: String,
     unique: true,
-    required: [true, 'book name is required...']
+    required: [true, 'book name is required...'],
   },
 
   description: {
     type: String,
-    required: [true, 'leave some description about the book..']
+    required: [true, 'leave some description about the book..'],
   },
 
   bookImage: {
     type: String,
-    required: [true, 'book image is required...']
+    required: [true, 'book image is required...'],
   },
 
   author: {
     type: Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'User',
   },
 
   date: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
-
-module.exports = mongoose.model('Book', bookSchema);
+export default model('Book', bookSchema);

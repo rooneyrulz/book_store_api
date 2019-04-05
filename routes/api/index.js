@@ -1,16 +1,15 @@
-const express = require("express");
-const router = express.Router();
+import { Router } from 'express';
 
+const router = Router();
 
-//@ Description     > Testing route
-//@ Route           > /api/test
-//@ Access Control  > Public
+// @Description     > Testing route
+// @Route           > /api/test
+// @Access Control  > Public
 router.get('/', (req, res, next) => {
   console.log(`testing...`);
   return res.status(200).json({
-    message: `Yay! It is working....`
+    message: `Yay! It is working....`,
   });
 });
 
-
-module.exports = router;
+export default router;

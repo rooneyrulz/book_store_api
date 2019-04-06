@@ -60,7 +60,7 @@ router.post('/register', async (req, res, next) => {
 
     return res.status(201).json({
       token,
-      user: { ...user._doc, password: null },
+      user: { ...createdUser._doc, password: null },
     });
   } catch (error) {
     return res.status(500).json({

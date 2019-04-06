@@ -1,9 +1,8 @@
 import { Router } from 'express';
-import { Types } from 'mongoose';
+import mongoose from 'mongoose';
 
 // Importing models
 import Book from '../../models/bookSchema';
-
 import User from '../../models/userSchema';
 
 // Importing file upload
@@ -99,7 +98,7 @@ router.post('/book', isAuth, upload, async (req, res, next) => {
     validAuthor = user;
 
     const newBook = Book({
-      _id: new Types.ObjectId(),
+      _id: new mongoose.Types.ObjectId(),
       name,
       description,
       bookImage: req.file.path,
@@ -179,12 +178,13 @@ router.delete('/book/:id', isAuth, async (req, res, next) => {
       // eslint-disable-next-line eqeqeq
       if (user.books[i] == bookId) {
         user.books.splice(i, 1);
-      } else {
-        next();
       }
     }
+
     await user.save();
+
     await Book.deleteOne({ _id: bookId }).exec();
+
     return res.status(200).json({
       success: true,
     });

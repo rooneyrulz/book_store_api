@@ -54,15 +54,23 @@ app.set('port', process.env.PORT || 5000);
 mongoose.Promise = require('bluebird');
 
 // Connecting to mongodb
-mongoose
-  .connect(mongoURI, { useNewUrlParser: true, useCreateIndex: true })
-  .then(res => {
+async function init() {
+  try {
+    const isConnected = await mongoose.connect(mongoURI, {
+      useNewUrlParser: true,
+      useCreateIndex: true,
+    });
+    if (!isConnected) {
+      throw new Error(`mongodb connection failed...`);
+    }
     // Listening to server
     server.listen(app.get('port'), () =>
       console.log(`server running on port ${app.get('port')}...`)
     );
     console.log(`connecting to mongodb...`);
-  })
-  .catch(err => {
-    throw err.message;
-  });
+  } catch (error) {
+    throw error.message;
+  }
+}
+
+init();

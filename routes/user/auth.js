@@ -18,113 +18,124 @@ const JWT_KEY = config.get('JWT_KEY');
 // @ Description     > Register users
 // @ Route           > /users/register
 // @ Access Control  > Public
-router.post('/register', (req, res, next) => {
+router.post('/register', async (req, res, next) => {
   const { name, age, email, password } = req.body;
 
   if (!name || !age || !email || !password) {
     return res.status(400).json({
-      message: `empy fields found...`,
+      msg: `empy fields found...`,
     });
   }
-  return User.findOne({ email })
-    .exec()
-    .then(user => {
-      if (user) {
-        return res.status(409).json({
-          message: `user already exist...`,
-        });
-      }
-
-      return hash(password, 12);
-    })
-    .then(hashedPwd => {
-      const newUser = User({
-        _id: new mongoose.Types.ObjectId(),
-        name,
-        age,
-        email,
-        password: hashedPwd,
+  try {
+    const user = await User.findOne({ email }).exec();
+    if (user) {
+      return res.status(409).json({
+        msg: `user already exist...`,
       });
+    }
 
-      return newUser.save();
-    })
-    .then(user => {
-      const token = sign({ id: user._id }, JWT_KEY, { expiresIn: '1h' });
-
-      return res.status(201).json({
-        token,
-        user: { ...user._doc, password: null },
+    const hashedPwd = await hash(password, 12);
+    if (!hashedPwd) {
+      return res.status(500).json({
+        error: `somthing went wrong in hashing the password...`,
       });
-    })
-    .catch(err => err.message);
+    }
+    const newUser = User({
+      _id: new mongoose.Types.ObjectId(),
+      name,
+      age,
+      email,
+      password: hashedPwd,
+    });
+
+    const createdUser = await newUser.save();
+    if (!createdUser) {
+      return res.status(500).json({
+        error: `something went wrong in adding the user...`,
+      });
+    }
+    const token = await sign({ id: createdUser._id }, JWT_KEY, {
+      expiresIn: '3600',
+    });
+
+    return res.status(201).json({
+      token,
+      user: { ...user._doc, password: null },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: error.message,
+    });
+  }
 });
 
 // @ Description     > Authenticate users
 // @ Route           > /users/auth
 // @ Access Control  > Public
-router.post('/auth', (req, res, next) => {
+router.post('/auth', async (req, res, next) => {
   const { email, password } = req.body;
-  let validUser;
+  let validUser = null;
 
   if (!email || !password) {
     return res.status(400).json({
-      message: 'invalid credintials...',
+      msg: 'invalid credintials...',
     });
   }
-  return User.findOne({ email })
-    .exec()
-    .then(user => {
-      if (!user) {
-        return res.status(409).json({
-          message: `user not found...`,
-        });
-      }
-
-      validUser = user;
-      return compare(password, user.password);
-    })
-    .then(isMatch => {
-      if (!isMatch) {
-        return res.status(409).json({
-          message: `invalid password...`,
-        });
-      }
-
-      const token = sign({ id: validUser._id }, JWT_KEY, { expiresIn: '1h' });
-
-      return res.status(200).json({
-        token,
-        user: { ...validUser._doc, password: null },
+  try {
+    const user = await User.findOne({ email }).exec();
+    if (!user) {
+      return res.status(409).json({
+        msg: `user not found...`,
       });
-    })
-    .catch(err => {
-      throw err.message;
+    }
+
+    validUser = user;
+    const isMatch = await compare(password, user.password);
+    if (!isMatch) {
+      return res.status(409).json({
+        msg: `invalid password...`,
+      });
+    }
+
+    const token = await sign({ id: validUser._id }, JWT_KEY, {
+      expiresIn: '1h',
     });
+
+    return res.status(200).json({
+      token,
+      user: { ...validUser._doc, password: null },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: error.message,
+    });
+  }
 });
 
 // @ Description     > Get authenticated user
 // @ Route           > /users/auth-user
 // @ Access Control  > Public
-router.get('/auth-user', isAuthenticated, (req, res, next) => {
+router.get('/auth-user', isAuthenticated, async (req, res, next) => {
   const userId = req.user.id;
 
-  return User.findOne({ _id: userId })
-    .select(' -password -__v ')
-    .exec()
-    .then(user => {
-      if (!user) {
-        return res.status(401).json({
-          message: `you not authorized, login first...`,
-        });
-      }
-
-      return res.status(200).json({
-        auth_user: user,
+  try {
+    const user = await User.findOne({ _id: userId })
+      .select(' -password -__v ')
+      .exec();
+    if (!user) {
+      return res.status(401).json({
+        msg: `you not authorized, login first...`,
       });
-    })
-    .catch(err => {
-      throw err.message;
+    }
+
+    return res.status(200).json({
+      auth_user: user,
     });
+  } catch (error) {
+    return res.status().json({
+      error: error.message,
+    });
+  }
 });
 
 export default router;

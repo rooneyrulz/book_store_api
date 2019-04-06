@@ -10,6 +10,7 @@ import indexRoute from './routes/api';
 import bookRoute from './routes/api/book';
 import authRoute from './routes/user/auth';
 import userRoute from './routes/user/user';
+import downloadRoute from './routes/api/download-csv';
 
 // Import MongoURI
 const mongoURI = config.get('MONGO_URI');
@@ -46,6 +47,7 @@ app.use('/api/test', indexRoute);
 app.use('/api', bookRoute);
 app.use('/users', authRoute);
 app.use('/users', userRoute);
+app.use('/api/download-csv', downloadRoute);
 
 // Set port
 app.set('port', process.env.PORT || 5000);

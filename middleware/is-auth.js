@@ -10,8 +10,10 @@ export default async (req, res, next) => {
       return res.status(401).json({
         msg: `you are not authorized...`,
       });
+
     // verify token
     const decoded = await verify(token, config.get('JWT_KEY'));
+
     req.user = decoded;
     next();
   } catch (error) {

@@ -4,8 +4,11 @@
   "description": "Sample Book Store App With Angular and Express",
   "main": "server.js",
   "scripts": {
+    "client-install": "npm install --prefix client",
+    "client": "npm start --prefix client",
     "start": "node -r esm server.js",
-    "server": "nodemon -r esm server.js"
+    "server": "nodemon -r esm server.js",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
   },
   "keywords": [
     "book-store-app"

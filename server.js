@@ -30,10 +30,10 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header(
     'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-auth-token'
   );
   if (req.method === 'OPTIONS') {
-    res.header('Access-Control-Allow-Methods', 'PUT POST PATCH GET DELETE');
+    res.header('Access-Control-Allow-Methods', 'PUT, POST, PATCH, GET, DELETE');
     return res.status(200).json({});
   }
   next();
@@ -42,12 +42,12 @@ app.use((req, res, next) => {
 // Set static folder
 app.use('/public', express.static(path.resolve(__dirname, 'public')));
 
-// Using routes
+// Use routes
 app.use('/api/test', indexRoute);
 app.use('/api', bookRoute);
-app.use('/users', authRoute);
-app.use('/users', userRoute);
 app.use('/api/download-csv', downloadRoute);
+app.use('/users', userRoute);
+app.use('/user/auth', authRoute);
 
 // Set port
 app.set('port', process.env.PORT || 5000);
@@ -62,14 +62,13 @@ async function init() {
       useNewUrlParser: true,
       useCreateIndex: true,
     });
-    if (!isConnected) {
-      throw new Error(`mongodb connection failed...`);
+    if (isConnected) {
+      // Listening to server
+      await server.listen(app.get('port'), () =>
+        console.log(`server running on port ${app.get('port')}...`)
+      );
+      console.log(`connecting to mongodb...`);
     }
-    // Listening to server
-    server.listen(app.get('port'), () =>
-      console.log(`server running on port ${app.get('port')}...`)
-    );
-    console.log(`connecting to mongodb...`);
   } catch (error) {
     throw error.message;
   }
